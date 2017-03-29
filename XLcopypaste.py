@@ -1,11 +1,11 @@
-import xlrd,xlwt,os
+import xlrd
 from tkinter.filedialog import askopenfilename
-from tkinter import Tk
+from tkinter import *
+import pyautogui as PG
 import openpyxl,re ,math
 from openpyxl.styles import PatternFill
 from openpyxl.styles.colors import YELLOW
 from openpyxl.styles import Border, Side
-import subprocess
 class test:
     def f1(self):
         Tk().withdraw()
@@ -19,7 +19,6 @@ class test:
     def f2(self,num_cols,num_rows,filename1):
          wb = openpyxl.load_workbook(filename=filename1)
          ws = wb.worksheets[0]
-         st = xlwt.easyxf('pattern: pattern solid;')
          thin_border = Border(left=Side(style='thin'),
                               right=Side(style='thin'),
                               top=Side(style='thin'),
@@ -102,10 +101,10 @@ class test:
                 ws.cell(row=j, column=num_cols).value = ""
 
         wb.save(filename1)
-        subprocess.check_call(['open', '-a', 'Microsoft Excel'])
 
 
 
 if __name__ == '__main__':
     t = test()
     t.f1()
+    PG.alert(text='Updated CDA Loss Profile', title='Success')
