@@ -2,13 +2,15 @@ from tkinter import Tk
 import tkinter.filedialog as filedialog
 import glob,re,csv
 import os
+import pyautogui as PG
 class GenerateCSV:
+    count=0
     def choosedir(self):
         choosed=filedialog.askdirectory(title='Please select the Source folder')
         files=self.takefiles(choosed)
+        GenerateCSV.count=len(files)
         Updated = filedialog.askdirectory(title='Please select the Destination folder')
         for file in files:
-            print(file,"cams")
             if re.search("SJR",file):
                 self.WriteHeading(file,Updated)
             else:
@@ -23,7 +25,6 @@ class GenerateCSV:
         name = file.split("\\")
 
         Updated = Updated+"/"+name[-1]
-        print(Updated,"djsaklfj")
         with open (file,'r') as f:
             Reader= csv.reader(f)
             count = 0
@@ -39,8 +40,8 @@ class GenerateCSV:
             for i in range(0,len(data)):
                 writer.writerow(data[i])
 
-
 if __name__ == '__main__':
     Tk().withdraw()
     gen= GenerateCSV()
     gen.choosedir()
+    PG.alert(text=str(GenerateCSV.count)+' Files Saved as CSV', title='Success')
