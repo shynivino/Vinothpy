@@ -5,7 +5,6 @@ from tkinter.filedialog import askopenfilename
 from tkinter import Tk
 
 
-
 # ----------------------------------------------------------------------
 class FibreLossCalculator:
     try:
