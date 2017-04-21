@@ -1,0 +1,265 @@
+<!-- 
+* Pole cleansing automation
+* Used javascript, Jquery, Google Map, HTML
+* @param ulat, ulon, nlat,nlon,tlat,tlon, nid, tid, uid, marker, i, rows, cells
+* @author i.dyeanvavar@accenture.com
+-->
+<!DOCTYPE html>
+<html> 
+<head>  
+  <title>Pole Cleansing</title> 
+  
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map{
+        float: left;
+        height: 100%;
+        width: 40%;
+      }
+	   #pno {
+        float: left;
+        height: 100%;
+        width: 60%;
+      }
+	  .button {
+			background-color: #4CAF50;
+			border: none;
+			color: white;
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
+	}
+	
+    </style>
+
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCoQ7Rdy6BwJBKnQBRML8xaidQNRuNnb5c"
+	  type="text/javascript">
+	</script>
+	
+	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
+    </script>
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	
+</head> 
+
+<body>
+	<P>
+		<input type="file" id="fileUpload" class="button" />
+		<input class="button" type="button" id="upload" value="Upload" onclick = "upload()" />
+	</p>
+	
+	<div id="map"></div>
+	<div id="pno"></div>
+	
+	<script type="text/javascript">
+			$(document).ready(function(){
+			$("#upload").click(function(){
+				$("p").hide();
+			});
+			});		
+			
+	function upload(){
+			var marker, i, rows, cells;
+			var ulat, ulon, nlat,nlon,tlat,tlon, nid, tid, uid, ailat, ailon, aitid, aiuid, ainid, aijuse, ainbnid, aicoment;
+			
+			var infowindow = new google.maps.InfoWindow();
+			
+			var fileUpload = document.getElementById("fileUpload");
+			var fileUpload = document.getElementById("fileUpload");
+			var ext = $('#fileUpload').val().split('.').pop().toLowerCase();
+			
+				if($.inArray(ext, ['csv']) == -1) {
+					alert('Invalid File Type!');
+					document.write('Please select CSV file')				
+					location.reload();
+					}else{
+					var reader = new FileReader();
+					reader.readAsText(fileUpload.files[0]);					
+					reader.onload = function (e) {   
+						var rows = e.target.result.split("\n");	 
+						alert(rows);
+						var cells = rows[1].split(",");
+						var latNNS = []; 
+						var lonNNS = [];
+						
+						var NNSicons = 'http://maps.google.com/mapfiles/ms/micons/purple-dot.png';
+							
+							latNNS.push(cells[1]);
+							lonNNS.push(cells[2]);
+							nlat = latNNS;
+							nlon = lonNNS;
+							var NNSicons = 'http://maps.google.com/mapfiles/ms/micons/purple-dot.png';
+							var map = new google.maps.Map(document.getElementById('map'), {
+							  zoom: 20,
+							  center: new google.maps.LatLng(nlat, nlon),
+					
+							  mapTypeId: 'satellite'
+							});
+							
+							var prama = new google.maps.StreetViewPanorama(document.getElementById('pno'), {
+							 position: new google.maps.LatLng(nlat, nlon),
+							pov: {
+							  heading: 34,							  
+							  pitch: 10
+							}
+							});
+							
+							map.setStreetView(prama);
+							var reader = new FileReader();
+					
+						var rows = e.target.result.split("\n");	
+						for (var i = 1; i < rows.length-1; i++) {                    
+						var cells = rows[i].split(",");
+						var latNNS = []; 
+						var lonNNS = [];
+						var NNSid = [];
+						var NNSicons = 'http://maps.google.com/mapfiles/ms/micons/purple-dot.png';
+							
+							latNNS.push(cells[1]);
+							lonNNS.push(cells[2]);
+							NNSid.push(cells[0]);
+							nlat = latNNS;
+							nlon = lonNNS;
+							nid = NNSid;
+							marker = new google.maps.Marker({															
+								position: new google.maps.LatLng(latNNS, lonNNS),
+								map: map,
+								icon: NNSicons,
+								draggable: false
+								});
+								
+							google.maps.event.addListener(marker, 'click', (function(marker, nlat, nlon, nid) {
+							return function() {
+							  infowindow.setContent(nlat.toString()+","+nlon.toString());
+							  infowindow.setContent("Lat:"+nlat.toString().fontcolor("green").bold()+", Long:"+nlon.toString().fontcolor("green").bold()+"<br> ID:"+nid.toString().fontcolor("red").bold());
+							  infowindow.open(map, marker);
+							 setTimeout(function(){ infowindow.close(); }, 6000);
+							}
+						  })(marker, nlat,nlon, nid));
+													
+							var latUtility = []; 
+							var lonUtility = [];
+							var utilityID = [];
+							var Utilityicons = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';								
+							latUtility.push(cells[4]);
+							lonUtility.push(cells[5]);
+							utilityID.push(cells[3]);
+							
+							ulat = latUtility;
+							ulon = lonUtility;
+							uid = utilityID;
+								marker = new google.maps.Marker({															
+								position: new google.maps.LatLng(latUtility, lonUtility),
+								map: map,
+								icon: Utilityicons,
+								draggable: false
+								});
+							google.maps.event.addListener(marker, 'click', (function(marker, ulat, ulon, uid) {
+							return function() {
+							  infowindow.setContent("Lat:"+ulat.toString().fontcolor("orange").bold()+", Long:"+ulon.toString().fontcolor("orange").bold()+"<br> ID:"+uid.toString().fontcolor("red").bold());
+							  infowindow.open(map, marker);
+							  setTimeout(function(){ infowindow.close(); }, 6000);
+							}
+						  })(marker, ulat,ulon, uid));
+							
+							var latTPNI = []; 
+							var lonTPNI = [];
+							var tpniID = [];
+							var TPNIicons = 'http://maps.google.com/mapfiles/ms/micons/ltblue-dot.png';
+							latTPNI.push(cells[7]);
+							lonTPNI.push(cells[8]);
+							tpniID.push(cells[6]);							
+							tlat = lonTPNI;
+							tlon = latTPNI;
+							tid = tpniID;
+							
+								marker = new google.maps.Marker({															
+								position: new google.maps.LatLng(latTPNI, lonTPNI),
+								map: map,
+								icon: TPNIicons,
+								draggable: false
+								});
+							google.maps.event.addListener(marker, 'click', (function(marker, tlat, tlon, tid) {
+							return function() {
+							  infowindow.setContent("Lat:"+tlon.toString().fontcolor("blue").bold()+", Long:"+tlat.toString().fontcolor("blue").bold()+"<br> ID:"+tid.toString().fontcolor("red").bold());
+							  infowindow.open(map, marker);
+							  setTimeout(function(){ infowindow.close(); }, 6000);
+							}
+						  })(marker, tlat,tlon, tid));
+
+							var latAI = []; 
+							var lonAI = [];
+							var AIID = [];
+							var AIJUSE = [];
+							var AINID = [];
+							var AITID = [];
+							var AINBNID = [];
+							var AICOMENT = [];
+							
+							<!--var AIicons = 'http://maps.google.com/mapfiles/kml/paddle/ylw-circle.png';-->
+							latAI.push(cells[14]);
+							lonAI.push(cells[15]);
+							AINID.push(cells[11]);
+							AITID.push(cells[10]);
+							AIJUSE.push(cells[13]);
+							AIID.push(cells[12]);
+							AINBNID.push(cells[9]);							
+							AICOMENT.push(cells[16]);
+							substring = 'Desktop Inspected';
+							substring1 = 'Field Inspection Required';
+							substring2 = 'Manual Inspection Required';
+							if (String(cells[16]).includes(substring))
+							{
+							newicon ='http://maps.google.com/mapfiles/kml/paddle/ylw-stars.png'
+							console.log("Inside yello")
+							}
+							else if (String(cells[16]).includes(substring1))
+							{
+							newicon = 'http://maps.google.com/mapfiles/kml/paddle/blu-stars.png'
+							console.log("Inside green")
+							}
+							else if(String(cells[16]).includes(substring2))
+							{
+							console.log("Inside Blue")
+							newicon = 'http://maps.google.com/mapfiles/kml/paddle/grn-stars.png'
+							}
+							
+							aicoment = AICOMENT;							
+							ailat = lonAI;
+							ailon = latAI;
+							aiuid = AIID;
+							aitid = AITID;
+							ainid = AINID;
+							aijuse = AIJUSE;
+							ainbnid = AINBNID;
+								marker = new google.maps.Marker({															
+								position: new google.maps.LatLng(latAI, lonAI),
+								map: map,
+								icon: newicon,
+								draggable: false
+								});
+							google.maps.event.addListener(marker, 'click', (function(marker, ailat, ailon, aiuid, aitid, ainid, aijuse, ainbnid,aicoment) {
+							return function() {
+							  infowindow.setContent("Lat:"+ailon.toString().fontcolor("blue").bold()+",Long:"+ailat.toString().fontcolor("blue").bold()+"<br> NBN ID:"+ainbnid.toString().fontcolor("green").bold()+"<br> UID:"+aiuid.toString().fontcolor("green").bold()+"<br> TID:"+aitid.toString().fontcolor("green").bold()+"<br> NID:"+ainid.toString().fontcolor("green").bold()+"<br> J_USE:"+aijuse.toString().fontcolor("red").bold()+"<br> AI_COMENT:"+aicoment.toString().fontcolor("red").bold());
+							  infowindow.open(map, marker);
+							  setTimeout(function(){ infowindow.close(); }, 6000);
+							}
+						  })(marker, ailat,ailon, aiuid, aitid, ainid, aijuse, ainbnid,aicoment));
+				  
+				}								
+														
+			}
+		}						
+} 
+  </script>
+</body>
+</html>
