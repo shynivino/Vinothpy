@@ -1,0 +1,211 @@
+Sub AT()
+
+'Author : Doddahulugappa Barikara
+
+Dim pillar() As String
+Dim atomic() As String
+Dim atomic1() As String
+
+Set objFSO = CreateObject("Scripting.FileSystemObject") 'Creating file system object
+    
+'Opening CCU Work book
+CCU = Application.GetOpenFilename("Excel Files (*.xlsx), *.xlsx, All Files (*.*), *.*", 1, "Select CCU Workbook File ")
+If CCU = "False" Then Exit Sub
+Set destWb = Workbooks.Open(CCU)
+Set objFile = objFSO.GetFile(CCU)
+CCU = objFile.Name
+'mysheets = ActiveWorkbook.Sheets.Count 'Count No of Sheets present in CCU WorkBook
+   
+'Opening CCU Work book
+CCU_Data = Application.GetOpenFilename("Excel Files (*.csv), *.csv, All Files (*.*), *.*", 1, "Select CCU Data File ")
+If CCU_Data = "False" Then Exit Sub
+Set destWb = Workbooks.Open(CCU_Data)
+Set objFile = objFSO.GetFile(CCU_Data)
+CCU_Data = objFile.Name
+    
+Windows(CCU_Data).Activate
+countCCUData = Range("A" & Rows.Count).End(xlUp).Row 'Count no of rows having data
+countunique = 0 'Count Unique CCU ID
+For i = 2 To countCCUData
+    If Range("A" & i).Value <> Range("A" & i + 1).Value Then
+        countunique = countunique + 1
+    End If
+Next i
+    
+'Replace  --: with ""
+Range("F1:F" & countCCUData).Select
+Selection.Replace What:="--:", Replacement:="", LookAt:=xlPart, _
+SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+ReplaceFormat:=False
+        
+CCU_Count = 0
+For a = 0 To countunique - 1 'Repeat for all the Unique CCU ID
+    Windows(CCU_Data).Activate
+    countCCUData = Range("A" & Rows.Count).End(xlUp).Row
+    
+    'Count No of Unique records present
+    countid = 1
+    For n = 2 To countCCUData
+        If Range("A" & n).Value = Range("A" & n + 1).Value Then
+            countid = countid + 1
+        Else
+            Exit For
+        End If
+    Next n
+    
+    'Look for the CCU name
+    flag = 0
+    For m = 2 To countid
+        If Len(Range("E" & m).Value) = 18 Then
+            CCU_Count = CCU_Count + 1
+            k = Range("E" & m).Value
+            'j = Range("A" & m).Value
+            flag = 1
+            Exit For
+        End If
+    Next m
+    
+    If flag = 0 Then
+        GoTo Copy
+    End If
+    
+    
+    CDA_NUM = (Mid(k, 9, 2)) 'Take CDA number
+    pillar1 = (Workbooks(CCU_Data).Sheets(1).Range("B" & m).Value)
+    pillar = Split(pillar1, ":")
+    
+    'Replace  "Pillar Type" with ""
+    Range("F1:F" & countid + 1).Select
+    Selection.Replace What:=pillar(0), Replacement:="", LookAt:=xlPart, _
+        SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+        ReplaceFormat:=False
+        
+    Windows(CCU).Activate
+    Worksheets("ADA " & CDA_NUM).Activate
+    For x = 2 To 20
+    If (Left(Range("B" & x).Value, 3) = "CCP") Then
+    Exit For
+    End If
+    Next
+    
+    For y = 2 To 25
+    If (Left(Range("B" & y).Value, 20) = "Proposed Pillar Size") Then
+    Exit For
+    End If
+    Next
+    
+    For Z = 2 To 40
+    If (Range("E" & Z).Value = "Proposed Cable Pair Ranges") Then
+    Exit For
+    End If
+    Next
+    
+    
+    If (Trim(Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("C" & x).Value) <> pillar(1)) Then
+        CDA_NUM = (Mid(k, 9, 2)) + "b"
+    Else
+        CDA_NUM = (Mid(k, 9, 2)) 'Take CDA number
+    End If
+    
+    'Compare Pillar type and mark green if matched otherwise red
+    If (Trim(Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("C" & x).Value) = pillar(1)) Then
+        Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("C" & x).Interior.ColorIndex = 4
+    Else
+        Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("C" & x).Interior.ColorIndex = 3
+    End If
+    
+    'Compare Pillar Size and mark green if matched otherwise red
+    If (Trim(Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("C" & y).Value) = (Workbooks(CCU_Data).Sheets(1).Range("C2").Value)) Then
+        Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("C" & y).Interior.ColorIndex = 4
+    Else
+        Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("C" & y).Interior.ColorIndex = 3
+    End If
+    
+    
+    'Start Comparing C, X, O and M pair cable designation and mark green if matched
+    For p = Z + 1 To Z + 9
+        For q = 2 To countid + 1
+            s = (Workbooks(CCU_Data).Sheets(1).Range("F" & q).Value)
+            If InStr(s, ",") > 0 Then
+                atomic = Split(s, ",")
+                d = Trim(Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Value)
+                If (Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Value) = (Workbooks(CCU_Data).Sheets(1).Range("F" & q).Value) Or (InStr(s, d)) > 0 Or (InStr(d, s)) > 0 Or (InStr(d, atomic(0))) > 0 Or (InStr(d, atomic(1))) > 0 Then
+                    Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Interior.ColorIndex = 4
+                    Exit For
+                End If
+            Else
+                d = Trim(Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Value)
+                If (Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Value) = (Workbooks(CCU_Data).Sheets(1).Range("F" & q).Value) Or (InStr(s, d)) > 0 Or (InStr(d, s)) > 0 Then
+                    Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Interior.ColorIndex = 4
+                    Exit For
+                End If
+            End If
+        Next q
+    Next p
+    
+    For q = 2 To countid + 1
+        For p = Z + 1 To Z + 9
+            s = (Workbooks(CCU_Data).Sheets(1).Range("F" & q).Value)
+            d = Trim(Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Value)
+            If InStr(d, ",") > 0 Then
+                atomic1 = Split(d, ",")
+                If (Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Value) = (Workbooks(CCU_Data).Sheets(1).Range("F" & q).Value) Or (InStr(s, d)) > 0 Or (InStr(d, s)) > 0 Or (InStr(s, atomic1(0))) Or (InStr(s, atomic1(1))) Then
+                    Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Interior.ColorIndex = 4
+                    Exit For
+                End If
+            Else
+                If (Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Value) = (Workbooks(CCU_Data).Sheets(1).Range("F" & q).Value) Or (InStr(s, d)) > 0 Or (InStr(d, s)) > 0 Then
+                    Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & p).Interior.ColorIndex = 4
+                    Exit For
+                End If
+            End If
+        Next p
+    Next q
+    
+    'Highlight in red which are not matched
+    For r = Z + 1 To Z + 9
+        If (Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & r).Interior.ColorIndex <> 4) Then
+            Workbooks(CCU).Sheets("ADA " & CDA_NUM).Range("E" & r).Interior.ColorIndex = 3
+        End If
+    Next r
+        
+Copy:
+    Windows(CCU_Data).Activate
+    Workbooks(CCU_Data).Sheets(1).Range("A2:L" & countid + 1).Select
+    Selection.Copy
+    'Create temp sheet
+    If a = 0 Then
+        Sheets.Add After:=ActiveSheet
+    End If
+    Worksheets(2).Activate
+    c = Range("A" & Rows.Count).End(xlUp).Row
+    If c = 1 Or c = 0 Then
+        Range("A1").Select
+        ActiveSheet.Paste
+    Else
+        Range("A" & c + 1).Select
+        ActiveSheet.Paste
+    End If
+    
+    Worksheets(1).Activate
+    Range("A2").Select
+    Rows("2:" & countid + 1).Select
+    Selection.Delete Shift:=xlUp
+    Range("A2").Select
+Next a
+'Copy from temp sheet to original sheet
+Worksheets(2).Activate
+counttemp = Range("A" & Rows.Count).End(xlUp).Row
+Range("A1:L" & counttemp).Select
+Selection.Copy
+Worksheets(1).Activate
+Range("A2").Select
+ActiveSheet.Paste
+Application.CutCopyMode = True
+Range("A2").Select
+
+'Close CCU Data file
+Windows(CCU_Data).Close Savechanges:=False
+MsgBox ("Successfully Completed for " & CCU_Count & " CCU's")
+
+End Sub
