@@ -40,8 +40,8 @@ def gmlediter():
         for node1 in root.findall('.//gml:featureMember/nbn:serviceLocation',nsmap):
                 nbnid = node1.find('nbn:locID',namespace1)
                 if nbnid is not None:
-                                if (re.search('LOC',nbnid.text)):
-                                                locid.append(nbnid.text)
+                        if (re.search('LOC',nbnid.text)):
+                                locid.append(nbnid.text)
 
         updatedfile.append(file_path+'/'+newFileName+'.csv')
         print(updatedfile)
@@ -70,8 +70,7 @@ def writecsv():
         with open(updatedfile[0], 'wb') as f:
                 writer1 = csv.writer(f,delimiter=' ',quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 for loc in nolocid:
-                        loc = loc.replace(" ", "")
-                        writer1.writerow(loc)
+                        writer1.writerow(loc.split())
 
 gmlediter()
 readcsv()
