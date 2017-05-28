@@ -1,9 +1,9 @@
+''' python 3.5 V:
 download mysql API for python
 go to mysql dir:
 python setup.py build
-python setup.py install
+python setup.py install or pip install pymysql'''
 
-'
 >>> import pymysql
 start XAMPP start Mysql
 >>> c=MySQLdb.connect('localhost','root','')
