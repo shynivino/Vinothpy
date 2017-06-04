@@ -1,5 +1,6 @@
 import speech_recognition as sr
- 
+## pip install SpeechRecognition
+## pip install pyaudio
 # Record Audio
 r = sr.Recognizer()
 with sr.Microphone() as source:
