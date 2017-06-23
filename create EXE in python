@@ -1,2 +1,0 @@
-python -m PyInstaller --windowed --name Filename filename.py(full path)
-#Creates Filename in current directory where you residing 
