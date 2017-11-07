@@ -38,7 +38,20 @@ fttbid=[]
 fttbtemp=[]
 FTTB=[]
 css=[]
-
+csdfno=[]
+jointid1=[]
+stid2=[]
+telstra_Joint={}
+telstra_missed_Joint={}
+nbncableID=[]
+nbncableID1=[]
+countofindex=[]
+countofindex1=[]
+pcdlist=[]
+CIU=[]
+csdid=[]
+deletedductstructure=[]
+deletedccu=[]
 def indent(elem, level=0):
     ''' indeting GML File Content ''' 
     i = "\n" + level*"  "
@@ -87,6 +100,23 @@ def Add_Joint(jointid,stid1):
     ET.SubElement(ct,"nbn:structurePointId").text=stid1 #(re.sub('CCU','NEC',jointid))#[:11])+'NEC-002'
     ET.SubElement(ct,"nbn:targetAssetFlag").text='Y'
     ET.SubElement(ct,"nbn:networkBoundaryPointFlag").text='N'
+
+    for node in root.findall('.//gml:FeatureCollection',namespace2):
+        '''Loop through all gml:Feature COllection'''
+    node.append(Joint)
+
+def Add_Joint_telstra(jointid1,stid2):
+    '''Adding -CCU-00 joint to gml:featureMember'''
+    Joint=ET.Element("gml:featureMember")
+    ct=ET.SubElement(Joint,"nbn:joint")
+    ET.SubElement(ct,"nbn:id").text=jointid1
+    ET.SubElement(ct,"nbn:jointType").text="Copper"
+    ET.SubElement(ct,"nbn:specification").text="Unknown Unknown"   
+    ET.SubElement(ct,"nbn:constructionStatus").text='INSERVICE'
+    ET.SubElement(ct,"nbn:owner").text="Telstra"
+    ET.SubElement(ct,"nbn:structurePointId").text=stid2 #(re.sub('CCU','NEC',jointid))#[:11])+'NEC-002'
+    ET.SubElement(ct,"nbn:targetAssetFlag").text='N'
+    
 
     for node in root.findall('.//gml:FeatureCollection',namespace2):
         '''Loop through all gml:Feature COllection'''
@@ -152,9 +182,47 @@ def writereport():
         csvwriter.writerow("")
         csvwriter.writerow(("CSS Error").split())
         for i in css:
-            csvwriter.writerow(i.split())                  
+            csvwriter.writerow(i.split())
+
+        csvwriter.writerow("")
+        csvwriter.writerow(("CSD FNO Designation Changed to ISAM_48").split())
+        for i in csdfno:
+            csvwriter.writerow(i.split())
+
+        csvwriter.writerow("")
+        csvwriter.writerow(("Duct Index Added CDS").split())
+        csvwriter.writerow(str(len(countofindex)).split())
         
+        csvwriter.writerow("")
+        csvwriter.writerow(("Trench Index Added CDS").split())
+        csvwriter.writerow(str(len(countofindex1)).split())
+
+        csvwriter.writerow("")
+        csvwriter.writerow(("PCD SPECS MISSING").split())
+        csvwriter.writerow(str(len(pcdlist)).split())
+
+        csvwriter.writerow("")
+        csvwriter.writerow(("CIU specification Error").split())
+        for i in CIU:
+            csvwriter.writerow(i.split())
+
+        csvwriter.writerow("")
+        csvwriter.writerow(("CSD joint specification Error").split())
+        for i in csdid:
+            csvwriter.writerow(i.split())
+
+        csvwriter.writerow("")
+        csvwriter.writerow(("Deleted CCU Block").split())
+        for i in deletedccu:
+            csvwriter.writerow(i.split())
+
+        csvwriter.writerow("")
+        csvwriter.writerow(("Deleted Structureroute Block").split())
+        for i in deletedductstructure:
+            csvwriter.writerow(i.split())
+
         
+       
     print(newFileName+'.csv')
     print('Log File generated Successfully')
     
@@ -177,6 +245,51 @@ try:
         if (re.search('NEC-003',nbnid.text)):
             ccu.append(nbnid.text)
             nbnid.text=str(nbnid.text[:11])+'CCU-002'
+            
+    cculist=[]
+    for node1 in root.findall('.//gml:featureMember/nbn:ccu',nsmap):
+        nbnid = node1.find('nbn:id',namespace1)
+        if (re.search('CCU',nbnid.text)):
+            cculist.append(nbnid.text)
+    cculist1=set(cculist)
+    cculist1=list(cculist1)
+    for i in range(len(cculist1)):
+            if cculist.count(cculist1[i]) > 1:
+                for node1 in root.findall('gml:FeatureCollection[gml:featureMember]',nsmap):
+                    for node2 in node1.findall('gml:featureMember[nbn:ccu]',nsmap):
+                        for node3 in node2.findall('nbn:ccu',namespace1):
+                            nbnid = node3.find('nbn:id',namespace1)
+                            if (re.search(cculist1[i],nbnid.text)):
+                                workpack=node3.find('./nbn:workPackage',namespace1)
+                                if workpack is None:
+                                    node1.remove(node2)
+                                    deletedccu.append(cculist1[i])
+                                    print("Deleted ",nbnid.text)
+                                    break
+
+    ductlist=[]
+    for node1 in root.findall('.//gml:featureMember/nbn:ductStructureRoute',nsmap):
+        nbnid = node1.find('nbn:ductId',namespace1)
+        ductlist.append(nbnid.text)
+    ductlist1=set(ductlist)
+    ductlist1=list(ductlist1)
+    for i in range(len(ductlist1)):
+            if ductlist.count(ductlist1[i]) > 1:
+                for node1 in root.findall('gml:FeatureCollection[gml:featureMember]',nsmap):
+                    for node2 in node1.findall('gml:featureMember[nbn:ductStructureRoute]',nsmap):
+                        for node3 in node2.findall('nbn:ductStructureRoute',namespace1):
+                            nbnid = node3.find('nbn:ductId',namespace1)
+                            if (re.search(ductlist1[i],nbnid.text)):
+                                routetype=node3.find('nbn:routeType',namespace1)
+                                if routetype.text=="DUCT":
+                                    node1.remove(node2)
+                                    deletedductstructure.append(ductlist1[i])
+                                    print("Deleted ",nbnid.text)
+                                    break
+    indent(root)
+    tree.write(updatedgml,encoding='UTF-8',xml_declaration=True)
+    tree=ET.parse(updatedgml)    
+    root = tree.getroot()                        
             
     for node1 in root.findall('.//gml:featureMember/nbn:ccu',nsmap):
         nbnid = node1.find('nbn:id',namespace1)       
@@ -201,6 +314,27 @@ try:
             ccu_joint.append(nbnid.text)
             StructurepointID.append(nbn.text)
 
+    for node1 in root.findall('.//gml:featureMember/nbn:ccu',nsmap):
+        nbnid=node1.find('nbn:id',namespace1)
+        nbn=node1.find('nbn:owner',namespace1)
+        if nbn is not None and nbnid is not None:
+            if nbn.text=='Telstra' and (re.search('0000',nbnid.text)):
+                stpoint=node1.find('nbn:structurePointId',namespace1)
+                telstra_Joint.update({(nbnid.text):(stpoint.text)})
+
+    for joint in telstra_Joint.keys():
+            flag=1
+            for node1 in root.findall('.//gml:featureMember/nbn:joint',nsmap):
+                nbnid=node1.find('nbn:id',namespace1)
+                if(re.search(joint,nbnid.text)):
+                    flag=0
+                    break;
+            if(flag==1):
+               telstra_missed_Joint.update({joint:(telstra_Joint[joint])})
+
+    for key1 in telstra_missed_Joint.keys():
+        Add_Joint_telstra(key1, telstra_missed_Joint[key1])
+
     for ccujoint in ccu_joint:
             flag=1
             for node1 in root.findall('.//gml:featureMember/nbn:joint',nsmap):
@@ -210,7 +344,8 @@ try:
                     break;
             if(flag==1):
                missed_Joint.append(ccujoint)
-
+               
+    missed_Joint=list(set(missed_Joint))
     for k in range(len(missed_Joint)):
         for node1 in root.findall('.//gml:featureMember/nbn:ccu', nsmap):
             nbnid = node1.find('nbn:id', namespace1)
@@ -234,17 +369,18 @@ try:
 
     for node1 in root.findall('.//gml:featureMember/nbn:structureRoute',nsmap):
         nbnid=node1.find('nbn:id',namespace1)
-        if(re.search('-TRE-',nbnid.text)):
-           start=node1.find('nbn:startStructurePointID',namespace1)
-           end=node1.find('nbn:endStructurePointID',namespace1)
+        if nbnid is not None:
+            if(re.search('-TRE-',nbnid.text)):
+               start=node1.find('nbn:startStructurePointID',namespace1)
+               end=node1.find('nbn:endStructurePointID',namespace1)
+               
+               if (re.search('CCU',start.text)):
+                   ccu_id.append(nbnid.text)
+                   start.text=re.sub('CCU','NEC',(start.text))
 
-           if (re.search('CCU',start.text)):
-               ccu_id.append(nbnid.text)
-               start.text=re.sub('CCU','NEC',(start.text))
-
-           if (re.search('CCU',end.text)):
-               ccu_id.append(nbnid.text)
-               end.text=re.sub('CCU','NEC',(end.text))
+               if (re.search('CCU',end.text)):
+                   ccu_id.append(nbnid.text)
+                   end.text=re.sub('CCU','NEC',(end.text))
 
     for i in range(len(missed_SP)):
         for node1 in root.findall('.//gml:featureMember/nbn:structureRoute',nsmap):
@@ -302,13 +438,19 @@ try:
                 break
 
     for node1 in root1.findall(parent_tag,nsmap):
-        nbnid=node1.find('nbn:id',namespace1)
-        if (re.search('-POL-',(nbnid.text))):
-            nbntype = node1.find('nbn:type',namespace1)
-            if (nbntype.text)=='HV/LV' or (nbntype.text)=='HV' or (nbntype.text)=='LV' or (nbntype.text)=='LV/HV' or (nbntype.text)=='Service Pole':
+        structurePointType=node1.find('nbn:structurePointType',namespace1)
+        if structurePointType is not None:            
+            if (structurePointType.text) == 'Pole' :
+                nbntype=node1.find('nbn:type',nsmap)
                 nbnid=node1.find('nbn:id',namespace1)
                 hv_lv_nbn_id.append(nbnid.text)
-                nbntype.text='Joint Use'
+                if nbntype is not None :
+                    nbntype.text='Joint Use'
+                else:
+                    specification = ET.Element("nbn:type")
+                    specification.text = "Joint Use"
+                    node1.append(specification)
+                    
 
     for node1 in root1.findall('.//gml:featureMember/nbn:joint',nsmap):
         nbnid=node1.find('nbn:id',namespace1)
@@ -351,12 +493,23 @@ try:
                 if ((nbnspecification.text) != 'FUS'):
                     nbnspecification.text = 'FUS'
                     fuseid.append(nbnid.text)
+
+
+    for node1 in root1.findall('.//gml:featureMember/nbn:joint',nsmap):
+        nbnid = node1.find('nbn:id', namespace1)
+        nbnjointtype = node1.find('nbn:jointType', namespace1)
+        if ((nbnjointtype.text) == 'CIU'):
+            nbnspecific = node1.find('nbn:specification',namespace1)
+            if nbnspecific is not None:
+                if ((nbnspecific.text) == 'Unknown Unknown' or (nbnspecific.text) =='Channell 31D'):
+                    nbnspecific.text = 'CU_OS_OJ_SMALL'
+                    CIU.append(nbnid.text)
             
     for node1 in root1.findall('.//gml:featureMember/nbn:joint',nsmap):
         nbnid = node1.find('nbn:id',namespace1)               
         if (re.search('-FNO-',nbnid.text)):
             jointType=node1.find('nbn:jointType',namespace1)
-            if jointType.text=='FTTB':
+            if jointType.text=='FTTB' :
                 fttbid.append(nbnid.text)
                 fttbtemp.append(nbnid.text)
                 nbnid.text=nbnid.text[:11]+'FBU-1'+nbnid.text[-2:]
@@ -375,6 +528,21 @@ try:
                     structurePointId=node1.find('nbn:structurePointId',namespace1)
                     fno_structurepoint.append(structurePointId.text)
                     fttbid.append(nbnid.text)
+
+                    
+    for node1 in root1.findall('.//gml:featureMember/nbn:joint',nsmap):
+        nbnid = node1.find('nbn:id',namespace1)
+        if (re.search('-CSD-',nbnid.text)):
+            jointType=node1.find('nbn:jointType',namespace1)             
+            if jointType.text=="FTTB":
+                jointType.text='Fibre'
+                specification1=node1.find('nbn:specification',namespace1)
+                if specification1 is not None:
+                    if specification1.text == "NBN_FTTB":
+                        specification1.text='D_TYCO_FIST-GCO2-BD-R12'
+                        csdid.append(nbnid.text)
+                    
+
 
     for fttb_id in fttbtemp:
         for node1 in root1.findall('.//gml:featureMember/nbn:cable',nsmap):
@@ -398,14 +566,7 @@ try:
                 if nbntype.text=='Null Node':
                     nbntype.text='Manhole-Footway'
                     break
-                
-    for node1 in root1.findall('.//gml:featureMember/nbn:ductStructureRoute',nsmap):
-        nbnid = node1.find('nbn:index',namespace1)               
-        if nbnid is None:
-            index=ET.Element("nbn:index")
-            index.text="1"
-            node1.append(index)
-            
+
     for node1 in root1.findall('.//gml:featureMember/nbn:cable',nsmap):
         nbnid = node1.find('nbn:id',namespace1)               
         if (re.search('-CSS-',nbnid.text)):
@@ -420,8 +581,92 @@ try:
         if (re.search('-FNO-',(nbnid.text))):
             specification = node1.find('nbn:specification',namespace1)
             if specification is not None:
-                if ((specification.text) == 'FNO_384_COMMSCOPE'):
-                    specification.text = 'ISAM_384'
+                if ((specification.text) == 'FNO_48_CSD_MICRONODE'):
+                    specification.text = 'ISAM_48'
+                    csdfno.append(nbnid.text)
+
+    for node1 in root1.findall('.//gml:featureMember/nbn:cableDuct',nsmap):
+        cableID=node1.find('nbn:cableID',nsmap)
+        if re.search('-CDS-',(cableID.text)):
+            nbncableID.append(cableID.text)        
+            
+    
+    i=1
+    l=0
+    for node1 in root1.findall('.//gml:featureMember/nbn:cableDuct',nsmap):
+        cableID=node1.find('nbn:cableID',nsmap)
+        if re.search('-CDS-',(cableID.text)):
+            nbnid = node1.find('nbn:index',nsmap)        
+            if nbnid is None:
+                index1=ET.Element("nbn:index")
+                index1.text=str(i)
+                node1.append(index1)
+                if l < len(nbncableID)-1 and nbncableID[l] != nbncableID[l+1]:
+                    i=1
+                else:
+                    i=i+1
+                l=l+1
+                countofindex.append(cableID.text)
+            if nbnid is not None:
+                nbnid.text=str(i)
+                if l < len(nbncableID)-1 and nbncableID[l] != nbncableID[l+1]:
+                    i=1
+                else:
+                    i=i+1
+                l=l+1
+
+    for node1 in root1.findall('.//gml:featureMember/nbn:cableStructureRoute',nsmap):
+        cableID=node1.find('nbn:cableID',nsmap)
+        if re.search('-CDS-',(cableID.text)):
+            nbncableID1.append(cableID.text)        
+            
+    
+    i=1
+    l=0
+    for node1 in root1.findall('.//gml:featureMember/nbn:cableStructureRoute',nsmap):
+        cableID1=node1.find('nbn:cableID',nsmap)
+        if re.search('-CDS-',(cableID1.text)):
+            nbnid = node1.find('nbn:index',nsmap)        
+            if nbnid is None:
+                index2=ET.Element("nbn:index")
+                index2.text=str(i)
+                node1.append(index2)
+                if l < len(nbncableID1)-1 and nbncableID1[l] != nbncableID1[l+1]:
+                    i=1
+                else:
+                    i=i+1
+                l=l+1
+                countofindex1.append(cableID1.text)
+            if nbnid is not None:
+                nbnid.text=str(i)
+                if l < len(nbncableID1)-1 and nbncableID1[l] != nbncableID1[l+1]:
+                    i=1
+                else:
+                    i=i+1
+                l=l+1
+
+                
+                
+    for node1 in root1.findall('.//gml:featureMember/nbn:ductStructureRoute',nsmap):
+        nbnid = node1.find('nbn:index',nsmap)               
+        if nbnid is None:
+            index=ET.Element("nbn:index")
+            index.text="1"
+            node1.append(index)
+
+    for node1 in root1.findall('.//gml:featureMember/nbn:pcd', nsmap):        
+        nbntech=node1.find('nbn:technology',nsmap)
+        nbn=node1.find('nbn:id',nsmap)
+        if nbntech is not None:
+            if nbntech.text=="COPPER":
+                nbnid = node1.find('nbn:specification', nsmap)
+                if nbnid is None:
+                    specification = ET.Element("nbn:specification")
+                    specification.text = "VIRTUAL"
+                    node1.append(specification)
+                    pcdlist.append(nbn.text)
+
+    
        
     indent(root1)
     tree.write(updatedgml,encoding='UTF-8',xml_declaration=True)
