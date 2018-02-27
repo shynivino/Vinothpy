@@ -43,11 +43,25 @@ def get_tweets(username):
  
         # Printing the tweets
         print(tmp)
- 
+def update_tweets():
+        try:
+                auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+                 
+                # authentication of access token and secret
+                auth.set_access_token(access_key, access_secret)
+                api = tweepy.API(auth)
+                 
+                # update the status
+                api.update_status(status ="Hello Everyone, Good Night!")
+                print "Updated"
+        except Exception as e:
+                print e
  
 # Driver code
 if __name__ == '__main__':
  
     # Here goes the twitter handle for the user
     # whose tweets are to be extracted.
-    get_tweets("@YYYYYYYY") 
+    update_tweets()
+    get_tweets("@HULUGAPPA4") 
+
