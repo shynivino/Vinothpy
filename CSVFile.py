@@ -7,5 +7,4 @@ with open('C:\NPAM\Book2.csv', 'wb') as csvFile:  # creating the consolidation f
     print("Header Writen while creating")
     #for i in range(0,len(cupid_match)):
        
-    writer.writerow({'UserName':cupid_match})
-csvFile.close()
+    writer.writerow({'UserName':"Huli"})
