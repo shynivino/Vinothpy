@@ -6,6 +6,11 @@ counter = Counter(arr)
 top_three = counter.most_common(5)
 print(top_three)
 
+first_attempt = Counter({1: 90, 2: 65, 3: 78, 4: 88})
+second_attempt = Counter({1: 88, 2: 84, 3: 95, 4: 92})
+final = first_attempt | second_attempt
+print(final)# Counter({3: 95, 4: 92, 1: 90, 2: 84})
+
 #Concept of Zipping & Sorting dict
 import heapq
  
@@ -34,3 +39,5 @@ def double_money(dollars):
  
 new_income = list(map(double_money, income))
 print(new_income)
+
+
