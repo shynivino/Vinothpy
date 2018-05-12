@@ -16,8 +16,37 @@ class Student:
            return ("eligible for voting")
        else:
            return("not eligible")
+
+class Parrot:
+
+    def fly(self):
+        print("Parrot can fly")
+
+    def swim(self):
+        print("Parrot can't swim")
+
+class Penguin:
+
+    def fly(self):
+        print("Penguin can't fly")
+
+    def swim(self):
+        print("Penguin can swim")
+
+# common interface
+def flying_test(bird):
+    bird.fly()
+
+#instantiate objects
+blu = Parrot()
+peggy = Penguin()
+# passing the object
+flying_test(blu) #calls Parrot fly method
+flying_test(peggy) #calls Penguin fly method
+
 emp1 = Student(121, "Ajeet")  
 emp2 = Student(122, "Sonoo")  
+
 emp1.displayStudent()  
 emp2.displayStudent()
 Student.printemployeecount()
