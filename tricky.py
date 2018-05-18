@@ -3,13 +3,14 @@ from collections import Counter
  
 arr = [1, 3, 4, 1, 2, 1, 1, 3, 4, 3, 5, 1, 2, 5, 3, 4, 5]
 counter = Counter(arr)
-top_three = counter.most_common(5)
+top_three = counter.most_common(3)
 print(top_three)
+##[(1, 5), (3, 4), (4, 3)]
 
 first_attempt = Counter({1: 90, 2: 65, 3: 78, 4: 88})
 second_attempt = Counter({1: 88, 2: 84, 3: 95, 4: 92})
 final = first_attempt | second_attempt
-print(final)# Counter({3: 95, 4: 92, 1: 90, 2: 84})
+print(final)# Counter({3: 95, 4: 92, 1: 90, 2: 84}) Prints the keys that having highest value
 
 #Concept of Zipping & Sorting dict
 import heapq
@@ -26,19 +27,27 @@ zipped_1 = zip(stocks.values(), stocks.keys())
  
 # sorting according to values
 print(sorted(zipped_1))
+#[(39.28, 'yhoo'), (76.45, 'FB'), (99.76, 'APPL'), (306.21, 'AMZN'), (520.54, 'Goog')]
  
+#sorting according to keys
 zipped_2 = zip(stocks.keys(), stocks.values())
 print(sorted(zipped_2))
-#sorting according to keys
+#[('AMZN', 306.21), ('APPL', 99.76), ('FB', 76.45), ('Goog', 520.54), ('yhoo', 39.28)]
 
-# Python code to apply a function on a list
+# Python code to apply a function on a list map, reduce and filter
 income = [10, 30, 75]
  
 def double_money(dollars):
     return dollars * 2
  
 new_income = list(map(double_money, income))
-print(new_income)
+print(new_income)#[20, 60, 150]
+
+total=reduce(lambda x,y:x+y,income)
+print (total)
+
+filtered=filter(lambda x:x>25,income)
+print filtered #[30, 75]
 
 ##finding pythogorian triplets
 print [(x, y, z) for z in range(1,100) for y in xrange(1, z) for x in range(1, y) if x*x + y*y == z*z]
