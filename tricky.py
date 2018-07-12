@@ -63,5 +63,11 @@ print [(x, y, z) for z in range(1,100) for y in xrange(1, z) for x in range(1, y
 (57, 76, 95), (65, 72, 97)]
 
 """
+## print in matrix manner
+print("\n".join(["".join(["{:3}".format(j) for j in range(3)]) for i in range(3)]))
+#output#
+  0  1  2
+  0  1  2
+  0  1  2
 
 
