@@ -36,8 +36,11 @@ def generatepwd():
     
 def printpassword():
     password = entry.get()
-    messagebox.showinfo("Generated Password", "Generated Password is {}".format(password))
-    print(password)
+    if password == "":
+       messagebox.showinfo("Alert", "Please Generate Password First") 
+    else:
+        messagebox.showinfo("Generated Password", "Generated Password is {}".format(password))
+        print(password)
 
 root = Tk()
 root.resizable(0,0)
