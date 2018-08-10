@@ -1,3 +1,5 @@
+""" Python 3+ version """
+
 import random
 import tkinter as tk
 from tkinter import ttk
