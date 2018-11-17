@@ -1,5 +1,5 @@
 import os
-
-os.chdir(r"C:\Users\Reach User2\Desktop\KAPUT_BE")
-os.system('dir > tmp.txt')
-print (open('tmp.txt', 'r').read())
+os.system(r'tasklist/svc > tmp.txt')
+lines = open('tmp.txt', 'r').read()
+os.remove('tmp.txt')
+print(lines)
