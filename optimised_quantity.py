@@ -5,7 +5,7 @@ but standard length available from the market is 300
 """
 
 material = {150:5,200:3,250:4,100:7}
-standard_material = {300:0}
+standard_material = {300:1000}
 sum = 0
 for key in material.keys():
     sum+=key*material[key]
