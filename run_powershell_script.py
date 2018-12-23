@@ -30,7 +30,7 @@ if __name__ == '__main__':
 arg1 = r'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
 arg2 = '-ExecutionPolicy'
 arg3 = 'Unrestricted'
-arg4 = r'C:\rdp_test_compliance_check.ps1'
+arg4 = r'C:\Users\Public\Documents\python_code\rdp_test_compliance_check.ps1'
 psxmlgen = subprocess.Popen([arg1,arg2,arg3,arg4],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 (stdout,stderr) = psxmlgen.communicate()
 print(stdout)

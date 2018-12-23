@@ -1,8 +1,8 @@
 import smtplib
 
 from_mail = 'doddahulugappa@gmail.com'
-password = '9945208358'
-to_mail = 'shankaragouda.g@gmail.com'
+password = 'Onsite123!@#'
+to_mail = 'doddahulugappa@gmail.com'
 gmail_server = 'smtp.gmail.com'
 gmail_port = 587
 mail_body = "Hi Dear, Hope you are doing well"
