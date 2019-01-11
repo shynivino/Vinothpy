@@ -13,8 +13,23 @@ namespace2={'gml':'http://www.opengis.net/gml'}
 nsmap={'nbn':'http://www.telstra.com.au/nbn','gml':'http://www.opengis.net/gml'}
 
 Tkinter.Tk().withdraw()  # we don't want a full GUI, so keep the root window from appearing
-filename = tkFileDialog.askopenfilename() #askopenfilename() #Ask to Open a File
+filename = tkFileDialog.askopenfilename(title="Open GML") #askopenfilename() #Ask to Open a File
 file_path, file_name = os.path.split(filename)
+
+filename_csv = tkFileDialog.askopenfilename(title="Open CSV") #askopenfilename() #Ask to Open a File
+
+
+csvfile = open(filename_csv,'r')
+cableDuctTrenchs = csvfile.readlines()
+cableDuctTrenchs = [cableducttrench.strip() for cableducttrench in cableDuctTrenchs]  
+csvCableID = []
+csvDuctID = []
+csvTrenchID = []
+for cableDuctTrench in cableDuctTrenchs[1:]:
+    cableDuctTrench = cableDuctTrench.split(',')
+    csvCableID.append(cableDuctTrench[0].strip("\""))
+    csvDuctID.append(cableDuctTrench[3].strip("\""))
+    csvTrenchID.append(cableDuctTrench[2].strip("\""))
 
 ccu=[]
 ccutype=[]
@@ -119,6 +134,18 @@ def Add_StructureRoute(cable_id,structure_route_id,index_id):
     for node in root.findall('.//gml:FeatureCollection',namespace2):
         '''Loop through all gml:Feature Collection'''
     node.append(StructureRoute)
+    
+def Add_Cable_Duct(cable,duct):
+    '''Adding CableDuct to gml:featureMember'''
+    StructureRoute=ET.Element("gml:featureMember")
+    ct=ET.SubElement(StructureRoute,"nbn:cableDuct")
+    ET.SubElement(ct,"nbn:cableID").text=cable
+    ET.SubElement(ct,"nbn:ductID").text=duct
+
+    for node in root.findall('.//gml:FeatureCollection',namespace2):
+        '''Loop through all gml:Feature Collection'''
+    node.append(StructureRoute)
+    
 
 def writereport():
     header="List of ID's Having Error"
@@ -654,7 +681,33 @@ try:
     
     root = tree.getroot()  
     
-    ''' Adding Structure route to cable'''  
+#    ''' Deleting existing cable duct'''
+#    deleted = 0
+#    for node1 in root.findall('gml:FeatureCollection[gml:featureMember]',nsmap):
+#        for node2 in node1.findall('gml:featureMember[nbn:cableDuct]',nsmap):
+#            node1.remove(node2)
+#            deleted += 1
+#    print("Deleted cable duct Count ",deleted)
+#    
+#    ''' Deleting existing cable structure route'''
+#    deleted = 0
+#    for node1 in root.findall('gml:FeatureCollection[gml:featureMember]',nsmap):
+#        for node2 in node1.findall('gml:featureMember[nbn:cableStructureRoute]',nsmap):
+#            node1.remove(node2)
+#            deleted += 1
+#    print("Deleted cableStructureRoute Count ",deleted)
+#    
+#    ''' Adding cable duct route'''  
+#    
+#    for cable,duct in zip(csvCableID,csvDuctID):
+#        if cable != "" and duct != "" and duct != "0":
+#            Add_Cable_Duct(cable,duct)
+#        
+#    ''' Adding Add_StructureRoute'''  
+#    
+#    for cable,trench in zip(csvCableID,csvTrenchID):
+#        if cable != "" and trench != "" and trench != "0":
+#            Add_StructureRoute(cable,trench)
  
     duct_dict = []    
     cable = []
@@ -675,23 +728,32 @@ try:
         for node1 in root.findall('.//gml:featureMember/nbn:cableStructureRoute',nsmap):
             nbn_cable_id=node1.find('nbn:cableID',namespace1)
             nbn_cable_index=node1.find('nbn:index',namespace1)
-            if(re.search(cable,nbn_cable_id.text) and index == nbn_cable_index.text):
-                flag=0
-                break;
+            if nbn_cable_id is not None and nbn_cable_index is not None:
+                if(re.search(cable.strip(),(nbn_cable_id.text).strip()) and index.strip() == (nbn_cable_index.text).strip()):
+                    flag=0
+                    break;
         if(flag==1):
            missed_structure_route.append([duct_dict[duct_count],cable,index])
         duct_count += 1               
-    print(missed_structure_route)                                                
-    for key in missed_structure_route:
-        for node1 in root.findall('.//gml:featureMember/nbn:ductStructureRoute',nsmap):
-            nbn_duct_id = node1.find('nbn:ductId',namespace1)
-            if nbn_duct_id is not None:
-                if re.search(key[0],nbn_duct_id.text):
-                    print("Yes added")
-                    nbn_trench = node1.find('nbn:structureRouteId',namespace1)
-                    Add_StructureRoute(key[1],nbn_trench.text,key[2])
-                    break
+    print(missed_structure_route)   
 
+
+    for key in missed_structure_route:
+        for duct,trench in zip(csvDuctID,csvTrenchID):
+            if key[0] == duct:            
+                print("Yes added")
+                Add_StructureRoute(key[1],trench,key[2])
+                break                                             
+#    for key in missed_structure_route:
+#        for node1 in root.findall('.//gml:featureMember/nbn:ductStructureRoute',nsmap):
+#            nbn_duct_id = node1.find('nbn:ductId',namespace1)
+#            if nbn_duct_id is not None:
+#                if re.search(key[0],nbn_duct_id.text):
+#                    print("Yes added")
+#                    nbn_trench = node1.find('nbn:structureRouteId',namespace1)
+#                    Add_StructureRoute(key[1],nbn_trench.text,key[2])
+#                    break
+#
     indent(root)
     tree.write(updatedgml,encoding='UTF-8',xml_declaration=True)
     tree = ET.parse(updatedgml)

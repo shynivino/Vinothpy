@@ -1,7 +1,7 @@
 import smtplib
 
 from_mail = 'doddahulugappa@gmail.com'
-password = 'Onsite123!@#'
+password = '********'
 to_mail = 'doddahulugappa@gmail.com'
 gmail_server = 'smtp.gmail.com'
 gmail_port = 587
